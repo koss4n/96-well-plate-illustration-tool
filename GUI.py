@@ -58,6 +58,9 @@ class App(ctk.CTk):
         self.canvas.create_aa_circle(x_pos=space*(j+1),y_pos=i,radius=20,fill="white")
       self.canvas.create_text(15,i,text=letter, fill="black", font=('Helvetica 15'))
       i+=space
+      
+    for i in range(12):
+      self.canvas.create_text(space*(i+1),15,text=i+1, fill="black", font=('Helvetica 15'))
     
       
     
