@@ -5,7 +5,7 @@ import numpy as np
 
 ctk.set_appearance_mode("System")  # Modes: "System" (standard), "Dark", "Light"
 ctk.set_default_color_theme("blue")  # Themes: "blue" (standard), "green", "dark-blue"
-letters_96size:list[str] = ["A","B","C","D","E","F","G","H","J","K","L","M","N","O","P"]
+letters_list:list[str] = ["A","B","C","D","E","F","G","H","J","K","L","M","N","O","P"]
 grid_size_list:list[str] = ["96"]
 global rectx1, recty1, rectyx2, recty2, non_circle_items
 non_circle_items:int
@@ -64,7 +64,7 @@ class App(ctk.CTk):
    
     i = space
     for i in range(rows):
-      self.canvas.create_text(15,space*(i+1),text=letters_96size[i], fill="black", font=('Helvetica 15'), tags = "letter")
+      self.canvas.create_text(15,space*(i+1),text=letters_list[i], fill="black", font=('Helvetica 15'), tags = "letter")
       
     for i in range(cols):
       self.canvas.create_text(space*(i+1),15,text=i+1, fill="black", font=('Helvetica 15'), tags = "num")
@@ -84,8 +84,9 @@ class App(ctk.CTk):
     print("released at", event.x, event.y)
     self.canvas.coords(self.rect_id,0,0,0,0)
     a= self.canvas.find_overlapping(rectx1,recty1,rectx2,recty2)
+    #Ignores items that aren't inner circle
     for item in a:
-      if item > 22 and item%2==1:
+      if item > non_circle_items and item%2==1:
         print(item) 
         self.canvas.itemconfig(item,fill="red")
   
