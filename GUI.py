@@ -5,9 +5,10 @@ import numpy as np
 
 ctk.set_appearance_mode("System")  # Modes: "System" (standard), "Dark", "Light"
 ctk.set_default_color_theme("blue")  # Themes: "blue" (standard), "green", "dark-blue"
-letters_96size:list[str] = ["A","B","C","D","E","F","G","H"]
+letters_96size:list[str] = ["A","B","C","D","E","F","G","H","J","K","L","M","N","O","P"]
 grid_size_list:list[str] = ["96"]
-global rectx1, recty1, rectyx2, recty2
+global rectx1, recty1, rectyx2, recty2, non_circle_items
+non_circle_items:int
 class App(ctk.CTk):
   def __init__(self):
       super().__init__()
@@ -53,20 +54,28 @@ class App(ctk.CTk):
   def create_well_grid_event(self, grid_size:str):
     
     if grid_size == "96":
-      self.create_canvas(space=70)
+      self.create_canvas(space=70, radius=30,rows=8,cols=12)
     
-  def create_canvas(self, space:int):
-    
+  #Creates a canvas from the specified values
+  def create_canvas(self, space:int, radius:int, rows:int, cols:int):
+    #Updates the values of non circle items
+    global non_circle_items
+    non_circle_items = rows + cols
+   
     i = space
-    for letter in letters_96size:
-      for j in range(12):
-        self.canvas.create_aa_circle(x_pos=space*(j+1),y_pos=i,radius=32,fill="black")
-        self.canvas.create_aa_circle(x_pos=space*(j+1),y_pos=i,radius=30,fill="white")
-      self.canvas.create_text(15,i,text=letter, fill="black", font=('Helvetica 15'), tags = "letter")
-      i+=space
+    for i in range(rows):
+      self.canvas.create_text(15,space*(i+1),text=letters_96size[i], fill="black", font=('Helvetica 15'), tags = "letter")
       
-    for i in range(12):
+    for i in range(cols):
       self.canvas.create_text(space*(i+1),15,text=i+1, fill="black", font=('Helvetica 15'), tags = "num")
+    
+    for i in range (cols):
+      for j in range(rows):
+        a = self.canvas.create_aa_circle(x_pos=space*(i+1),y_pos=space*(j+1),radius=radius+2,fill="black")
+        print(a)
+        b=self.canvas.create_aa_circle(x_pos=space*(i+1),y_pos=space*(j+1),radius=radius,fill="white")
+        print(b)
+    
     
   #Test
 
@@ -76,9 +85,9 @@ class App(ctk.CTk):
     self.canvas.coords(self.rect_id,0,0,0,0)
     a= self.canvas.find_overlapping(rectx1,recty1,rectx2,recty2)
     for item in a:
-      
-      print(item) 
-      self.canvas.itemconfig(item,fill="red")
+      if item > 22 and item%2==1:
+        print(item) 
+        self.canvas.itemconfig(item,fill="red")
   
     
     
