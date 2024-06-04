@@ -26,9 +26,17 @@ class App(ctk.CTk):
       self.logo_label = ctk.CTkLabel(self.sidebar_frame, text="Well Template App", font=ctk.CTkFont(size=20, weight="bold"))
       self.logo_label.grid(row=0, column=0, padx=20, pady=(20, 10))
       
-      self.generate_well_grid = ctk.CTkOptionMenu(self.sidebar_frame, values=grid_size_list,
+      self.choose_grid_optionmenu = ctk.CTkOptionMenu(self.sidebar_frame, values=grid_size_list,
                                               command = self.create_well_grid_event)
-      self.generate_well_grid.grid(row=1,column=0,padx=20,pady=20)
+      self.choose_grid_optionmenu.set("")
+      self.choose_grid_optionmenu.grid(row=1,column=0,padx=20,pady=20)
+      
+      #Button to create circle type
+      
+      self.create_circle_type = ctk.CTkButton(self.sidebar_frame, text = "Create Circle Type")
+      self.create_circle_type.grid(row=2, column = 0, padx = 20, pady=(40,0))
+      
+      #Canvas GUI
       self.canvas = ctk.CTkCanvas(master=self, width = 900, height = 800, highlightcolor="blue")
       self.canvas.grid(row=0,column=1, pady=(50))
       
@@ -40,14 +48,9 @@ class App(ctk.CTk):
         
           
           
-        
       
       
-  
-    
-      
-      
-      self.canvas_under_frame = ctk.CTkFrame(self, width=200,height=200)
+      self.canvas_under_frame = ctk.CTkFrame(self, width=900,height=200)
       self.canvas_under_frame.grid(row=1,column=1)
       self.rect_id = self.canvas.create_rectangle(0,0,0,0,dash=(2,2),fill='',outline='black')
     
@@ -61,7 +64,7 @@ class App(ctk.CTk):
     #Updates the values of non circle items
     global non_circle_items
     non_circle_items = rows + cols
-   
+    #Algorithm creates letters/num seperately from circles to be easier identify which itemIDs belong to circles
     i = space
     for i in range(rows):
       self.canvas.create_text(15,space*(i+1),text=letters_list[i], fill="black", font=('Helvetica 15'), tags = "letter")
@@ -71,10 +74,9 @@ class App(ctk.CTk):
     
     for i in range (cols):
       for j in range(rows):
-        a = self.canvas.create_aa_circle(x_pos=space*(i+1),y_pos=space*(j+1),radius=radius+2,fill="black")
-        print(a)
-        b=self.canvas.create_aa_circle(x_pos=space*(i+1),y_pos=space*(j+1),radius=radius,fill="white")
-        print(b)
+        self.canvas.create_aa_circle(x_pos=space*(i+1),y_pos=space*(j+1),radius=radius+2,fill="black")
+        self.canvas.create_aa_circle(x_pos=space*(i+1),y_pos=space*(j+1),radius=radius,fill="white")
+        
     
     
   #Test
