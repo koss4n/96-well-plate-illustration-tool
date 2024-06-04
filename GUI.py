@@ -7,9 +7,7 @@ ctk.set_appearance_mode("System")  # Modes: "System" (standard), "Dark", "Light"
 ctk.set_default_color_theme("blue")  # Themes: "blue" (standard), "green", "dark-blue"
 letters_96size:list[str] = ["A","B","C","D","E","F","G","H"]
 grid_size_list:list[str] = ["96"]
-selected_area:list[int] =[]
-global rectx
-global recty
+global rectx1, recty1, rectyx2, recty2
 class App(ctk.CTk):
   def __init__(self):
       super().__init__()
@@ -50,7 +48,7 @@ class App(ctk.CTk):
       
       self.canvas_under_frame = ctk.CTkFrame(self, width=200,height=200)
       self.canvas_under_frame.grid(row=1,column=1)
-      self.rect_id = self.canvas.create_rectangle(0,0,0,0,dash=(2,2),fill='',outline='white')
+      self.rect_id = self.canvas.create_rectangle(0,0,0,0,dash=(2,2),fill='',outline='black')
     
   def create_well_grid_event(self, grid_size:str):
     
@@ -64,36 +62,36 @@ class App(ctk.CTk):
       for j in range(12):
         self.canvas.create_aa_circle(x_pos=space*(j+1),y_pos=i,radius=32,fill="black")
         self.canvas.create_aa_circle(x_pos=space*(j+1),y_pos=i,radius=30,fill="white")
-      self.canvas.create_text(15,i,text=letter, fill="black", font=('Helvetica 15'))
+      self.canvas.create_text(15,i,text=letter, fill="black", font=('Helvetica 15'), tags = "letter")
       i+=space
       
     for i in range(12):
-      self.canvas.create_text(space*(i+1),15,text=i+1, fill="black", font=('Helvetica 15'))
+      self.canvas.create_text(space*(i+1),15,text=i+1, fill="black", font=('Helvetica 15'), tags = "num")
     
   #Test
 
   def release(self,event):
+    global rectx1, recty1, rectx2, recty2
     print("released at", event.x, event.y)
     self.canvas.coords(self.rect_id,0,0,0,0)
-    selected_area.append(event.x)
-    selected_area.append(event.y)
-    a= self.canvas.find_overlapping(selected_area[0],selected_area[1],selected_area[2],selected_area[3])
+    a= self.canvas.find_overlapping(rectx1,recty1,rectx2,recty2)
     for item in a:
+      
+      print(item) 
       self.canvas.itemconfig(item,fill="red")
   
-    selected_area.clear()
+    
     
   def drag(self,event):
-    
-    self.canvas.coords(self.rect_id,rectx,recty,event.x,event.y)
+    global rectx2, recty2
+    rectx2, recty2 = event.x,event.y
+    self.canvas.coords(self.rect_id,rectx1,recty1,rectx2,recty2)
     
   def callback(self,event):
+    global rectx1, recty1
     print("clicked at", event.x,event.y)
-    global rectx
-    global recty
-    
-    rectx = event.x
-    recty= event.y
+    rectx1 = event.x
+    recty1= event.y
   
       
     
