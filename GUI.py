@@ -1,7 +1,7 @@
 #Main application file
 import customtkinter as ctk
 from CTkMessagebox import CTkMessagebox
-import numpy as np
+from CTkColorPicker import *
 
 ctk.set_appearance_mode("System")  # Modes: "System" (standard), "Dark", "Light"
 ctk.set_default_color_theme("blue")  # Themes: "blue" (standard), "green", "dark-blue"
@@ -12,10 +12,12 @@ non_circle_items:int
 class App(ctk.CTk):
   def __init__(self):
       super().__init__()
+      self.color = "white"
+      self.circle_type_list =[]
       self.title("Well Template.py")
       self.geometry(f"{1600}x{900}")
       # configure grid layout (2x2)
-      self.grid_columnconfigure(1, weight=1)
+      self.grid_columnconfigure(2, weight=1)
       self.grid_rowconfigure((0, 1), weight=1)
       
       self.sidebar_frame = ctk.CTkFrame(self, width=140, corner_radius=0)
@@ -32,13 +34,17 @@ class App(ctk.CTk):
       self.choose_grid_optionmenu.grid(row=1,column=0,padx=20,pady=20)
       
       #Button to create circle type
-      
-      self.create_circle_type = ctk.CTkButton(self.sidebar_frame, text = "Create Circle Type")
+      self.create_circle_type = ctk.CTkButton(self.sidebar_frame, text = "Create Circle Type",
+                                              command = self.ask_color)
       self.create_circle_type.grid(row=2, column = 0, padx = 20, pady=(40,0))
+    
+      #Scroll frame with circle types
       
+      self.scroll_frame_circles = ctk.CTkScrollableFrame(self, width = 200)
+      self.scroll_frame_circles.grid(row=0,column=1, sticky="ns", padx=(20,0),pady=(40,0)) 
       #Canvas GUI
       self.canvas = ctk.CTkCanvas(master=self, width = 900, height = 800, highlightcolor="blue")
-      self.canvas.grid(row=0,column=1, pady=(50))
+      self.canvas.grid(row=0,column=2, pady=(50))
       
       
       
@@ -51,7 +57,7 @@ class App(ctk.CTk):
       
       
       self.canvas_under_frame = ctk.CTkFrame(self, width=900,height=200)
-      self.canvas_under_frame.grid(row=1,column=1)
+      self.canvas_under_frame.grid(row=1,column=2)
       self.rect_id = self.canvas.create_rectangle(0,0,0,0,dash=(2,2),fill='',outline='black')
     
   def create_well_grid_event(self, grid_size:str):
@@ -63,7 +69,7 @@ class App(ctk.CTk):
   def create_canvas(self, space:int, radius:int, rows:int, cols:int):
     #Updates the values of non circle items
     global non_circle_items
-    non_circle_items = rows + cols
+    non_circle_items = rows + cols + 1
     #Algorithm creates letters/num seperately from circles to be easier identify which itemIDs belong to circles
     i = space
     for i in range(rows):
@@ -90,7 +96,7 @@ class App(ctk.CTk):
     for item in a:
       if item > non_circle_items and item%2==1:
         print(item) 
-        self.canvas.itemconfig(item,fill="red")
+        self.canvas.itemconfig(item,fill=self.color)
   
     
     
@@ -105,8 +111,17 @@ class App(ctk.CTk):
     rectx1 = event.x
     recty1= event.y
   
-      
-    
+  def ask_color(self):
+    pick_color = AskColor() # open the color picker
+    color = pick_color.get() # get the color string
+    self.circle_type_list.append(color)
+    def change_color():
+      self.color = color
+      self.value=0
+    circle_button = ctk.CTkRadioButton(self.scroll_frame_circles, border_color =color, text=color, value=0, 
+                                       command = change_color)
+    circle_button.grid(row=len(self.circle_type_list),column=0,padx=20,pady=20, sticky="w")
+  
 if __name__ == "__main__":
     app = App()
     app.mainloop()  
