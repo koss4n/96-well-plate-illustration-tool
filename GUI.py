@@ -9,6 +9,7 @@ letters_list:list[str] = ["A","B","C","D","E","F","G","H","J","K","L","M","N","O
 grid_size_list:list[str] = ["96"]
 global rectx1, recty1, rectyx2, recty2, non_circle_items
 non_circle_items:int
+rectx1, recty1, rectyx2, recty2 = 0,0,0,0
 class App(ctk.CTk):
   def __init__(self):
       super().__init__()
@@ -90,6 +91,7 @@ class App(ctk.CTk):
   def release(self,event):
     global rectx1, recty1, rectx2, recty2
     print("released at", event.x, event.y)
+    
     self.canvas.coords(self.rect_id,0,0,0,0)
     a= self.canvas.find_overlapping(rectx1,recty1,rectx2,recty2)
     #Ignores items that aren't inner circle
@@ -106,10 +108,10 @@ class App(ctk.CTk):
     self.canvas.coords(self.rect_id,rectx1,recty1,rectx2,recty2)
     
   def callback(self,event):
-    global rectx1, recty1
+    global rectx1, recty1,rectx2,recty2
     print("clicked at", event.x,event.y)
-    rectx1 = event.x
-    recty1= event.y
+    rectx1, rectx2 = event.x, event.x
+    recty1,recty2= event.y,event.y
   
   def ask_color(self):
     pick_color = AskColor() # open the color picker
