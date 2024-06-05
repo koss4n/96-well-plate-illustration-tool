@@ -88,8 +88,8 @@ class App(ctk.CTk):
         
     
     
-  #Test
-
+  
+  #Manipulates all circles overlapping with click-drag rectangle
   def release(self,event):
     global rectx1, recty1, rectx2, recty2
     print("released at", event.x, event.y)
