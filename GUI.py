@@ -9,7 +9,7 @@ letters_list:list[str] = ["A","B","C","D","E","F","G","H","J","K","L","M","N","O
 grid_size_list:list[str] = ["96"]
 global rectx1, recty1, rectyx2, recty2, non_circle_items
 non_circle_items:int
-rectx1, recty1, rectyx2, recty2 = 0,0,0,0
+rectx1, recty1, rectyx2, recty2, non_circle_items = 0,0,0,0,0
 class App(ctk.CTk):
   def __init__(self):
       super().__init__()
@@ -20,6 +20,8 @@ class App(ctk.CTk):
       # configure grid layout (2x2)
       self.grid_columnconfigure(2, weight=1)
       self.grid_rowconfigure((0, 1), weight=1)
+      
+      self.radio_var = ctk.StringVar(value="other") 
       
       self.sidebar_frame = ctk.CTkFrame(self, width=140, corner_radius=0)
       self.sidebar_frame.grid(row=0, column=0, rowspan=4, sticky="nsew")
@@ -117,13 +119,14 @@ class App(ctk.CTk):
     pick_color = AskColor() # open the color picker
     color = pick_color.get() # get the color string
     self.circle_type_list.append(color)
+    
     def change_color():
       self.color = color
-      self.value=0
-    circle_button = ctk.CTkRadioButton(self.scroll_frame_circles, border_color =color, text=color, value=0, 
+      
+     
+    circle_button = ctk.CTkRadioButton(self.scroll_frame_circles, border_color =color, text=color, variable=self.radio_var, 
                                        command = change_color)
     circle_button.grid(row=len(self.circle_type_list),column=0,padx=20,pady=20, sticky="w")
-  
 if __name__ == "__main__":
     app = App()
     app.mainloop()  
