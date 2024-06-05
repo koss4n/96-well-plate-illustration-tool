@@ -15,6 +15,7 @@ class App(ctk.CTk):
       super().__init__()
       self.color = "white"
       self.circle_type_list =[]
+      self.canvas_items_map = {}
       self.title("Well Template.py")
       self.geometry(f"{1600}x{900}")
       # configure grid layout (2x2)
@@ -83,9 +84,14 @@ class App(ctk.CTk):
     
     for i in range (cols):
       for j in range(rows):
-        self.canvas.create_aa_circle(x_pos=space*(i+1),y_pos=space*(j+1),radius=radius+2,fill="black")
-        self.canvas.create_aa_circle(x_pos=space*(i+1),y_pos=space*(j+1),radius=radius,fill="white")
+        x = space*(i+1), 
+        y = space*(j+1)
+        self.canvas.create_aa_circle(x,y,radius=radius+2,fill="black")
+        id = self.canvas.create_aa_circle(x,y,radius=radius,fill="white")
+        coords = x,y
+        self.canvas_items_map[id] = coords
         
+    print(self.canvas_items_map[27])    
     
     
   
@@ -101,6 +107,8 @@ class App(ctk.CTk):
       if item > non_circle_items and item%2==1:
         print(item) 
         self.canvas.itemconfig(item,fill=self.color)
+        self.canvas.create_text(self.canvas_items_map[item],text="Test", tags = "text-item")
+        
   
     
     
@@ -114,6 +122,7 @@ class App(ctk.CTk):
     print("clicked at", event.x,event.y)
     rectx1, rectx2 = event.x, event.x
     recty1,recty2= event.y,event.y
+    self.canvas.delete("text-item")
   
   def ask_color(self):
     pick_color = AskColor() # open the color picker
