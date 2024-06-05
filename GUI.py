@@ -14,7 +14,7 @@ class App(ctk.CTk):
   def __init__(self):
       super().__init__()
       self.color = "white"
-      self.circle_type_list =[]
+      self.circle_type_list ={}
       self.canvas_items_map = {}
       self.title("Well Template.py")
       self.geometry(f"{1600}x{900}")
@@ -41,11 +41,23 @@ class App(ctk.CTk):
       self.create_circle_type = ctk.CTkButton(self.sidebar_frame, text = "Create Circle Type",
                                               command = self.ask_color)
       self.create_circle_type.grid(row=2, column = 0, padx = 20, pady=(40,0))
+      
+      #Button for adding name to circle type
+      self.change_name_circle = ctk.CTkButton(self.sidebar_frame, text = "Change Name Circle", state='disabled',
+                                              command = self.add_name_radiobutton)
+      self.change_name_circle.grid(row=3, column = 0, padx = 20, pady=(40,0))
     
       #Scroll frame with circle types
       
       self.scroll_frame_circles = ctk.CTkScrollableFrame(self, width = 200)
       self.scroll_frame_circles.grid(row=0,column=1, sticky="ns", padx=(20,0),pady=(40,0)) 
+      def color_white():
+        self.color = "white"
+      circle_button = ctk.CTkRadioButton(self.scroll_frame_circles, border_color ="white", border_width_checked=11, fg_color="white",
+                                       variable=self.radio_var, text="Default",
+                                       command = color_white)
+      circle_button.grid(row=len(self.circle_type_list),column=0,padx=20,pady=20, sticky="w")
+      self.circle_type_list["white"] = circle_button
       #Canvas GUI
       self.canvas = ctk.CTkCanvas(master=self, width = 900, height = 800, highlightcolor="blue")
       self.canvas.grid(row=0,column=2, pady=(50))
@@ -88,8 +100,8 @@ class App(ctk.CTk):
         y = space*(j+1)
         self.canvas.create_aa_circle(x,y,radius=radius+2,fill="black")
         id = self.canvas.create_aa_circle(x,y,radius=radius,fill="white")
-        coords = x,y
-        self.canvas_items_map[id] = coords
+        coords_circle = x,y
+        self.canvas_items_map[id] = coords_circle
         
     print(self.canvas_items_map[27])    
     
@@ -107,7 +119,7 @@ class App(ctk.CTk):
       if item > non_circle_items and item%2==1:
         print(item) 
         self.canvas.itemconfig(item,fill=self.color)
-        self.canvas.create_text(self.canvas_items_map[item],text="Test", tags = "text-item")
+        #self.canvas.create_text(self.canvas_items_map[item],text="Test", tags = "text-item")
         
   
     
@@ -127,15 +139,25 @@ class App(ctk.CTk):
   def ask_color(self):
     pick_color = AskColor() # open the color picker
     color = pick_color.get() # get the color string
-    self.circle_type_list.append(color)
     
     def change_color():
       self.color = color
-      
+      self.change_name_circle.configure(state='normal')
      
-    circle_button = ctk.CTkRadioButton(self.scroll_frame_circles, border_color =color, text=color, variable=self.radio_var, 
+    circle_button = ctk.CTkRadioButton(self.scroll_frame_circles, border_color =color,border_width_checked=11,
+                                       variable=self.radio_var, text="", fg_color= color,
                                        command = change_color)
     circle_button.grid(row=len(self.circle_type_list),column=0,padx=20,pady=20, sticky="w")
+    self.circle_type_list[color] = circle_button
+    
+  def add_name_radiobutton(self):
+    if self.color != "white":
+      input_name = ctk.CTkInputDialog(text="Write Circle Name",title="Circle Name")
+      name = input_name.get_input()
+      self.circle_type_list[self.color].configure(text=name)
+    
+    
+    
 if __name__ == "__main__":
     app = App()
     app.mainloop()  
