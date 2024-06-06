@@ -10,12 +10,17 @@ grid_size_list:list[str] = ["96"]
 global rectx1, recty1, rectyx2, recty2, non_circle_items
 non_circle_items:int
 rectx1, recty1, rectyx2, recty2, non_circle_items = 0,0,0,0,0
+font_list = ["Helvetica", "Sans", "System", "Terminal", "Ms", "Times"]
+font_size_list = ["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20"]
 class App(ctk.CTk):
   def __init__(self):
       super().__init__()
       self.color = "white"
-      self.circle_type_list ={}
+      self.font = "Helvetica 15"
+      self.circle_radio_list ={}
+      self.circle_color_map ={}
       self.canvas_items_map = {}
+      self.canvas_id_text_map = {}
       self.title("Well Template.py")
       self.geometry(f"{1600}x{900}")
       # configure grid layout (2x2)
@@ -26,7 +31,7 @@ class App(ctk.CTk):
       
       self.sidebar_frame = ctk.CTkFrame(self, width=140, corner_radius=0)
       self.sidebar_frame.grid(row=0, column=0, rowspan=4, sticky="nsew")
-      self.sidebar_frame.grid_rowconfigure(4, weight=1)
+      self.sidebar_frame.grid_rowconfigure(6, weight=1)
       
       #Logo for app
       self.logo_label = ctk.CTkLabel(self.sidebar_frame, text="Well Template App", font=ctk.CTkFont(size=20, weight="bold"))
@@ -46,7 +51,29 @@ class App(ctk.CTk):
       self.change_name_circle = ctk.CTkButton(self.sidebar_frame, text = "Change Name Circle", state='disabled',
                                               command = self.add_name_radiobutton)
       self.change_name_circle.grid(row=3, column = 0, padx = 20, pady=(40,0))
+      
+      self.add_text_button = ctk.CTkButton(self.sidebar_frame, text = "Add Text",
+                                              command = self.add_text_to_circletype)
+      self.add_text_button.grid(row=4, column = 0, padx = 20, pady=(40,0))
+      
+      #Optionmenus for choosing text style
+      self.font_optionmenu = ctk.CTkOptionMenu(self.sidebar_frame, values=font_list,
+                                               command = self.change_font)
+      self.font_optionmenu.set("Helvetica")
+      self.font_optionmenu.grid(row=5,column=0,padx=(0,55),pady=20)
     
+    #Optionmenus for choosing text style
+      self.font_size_optionmenu = ctk.CTkOptionMenu(self.sidebar_frame, values=font_size_list, width=20,
+                                                   command = self.change_font)
+      self.font_size_optionmenu.set("15")
+      self.font_size_optionmenu.grid(row=5,column=0,padx=(145,0),pady=20)
+      
+
+      
+      self.remove_text_button = ctk.CTkButton(self.sidebar_frame, text = "Remove Text",
+                                              command = self.remove_text_for_circles)
+      self.remove_text_button.grid(row=6, column = 0, padx = 20, pady=(200,0))
+      
       #Scroll frame with circle types
       
       self.scroll_frame_circles = ctk.CTkScrollableFrame(self, width = 200)
@@ -56,18 +83,20 @@ class App(ctk.CTk):
       circle_button = ctk.CTkRadioButton(self.scroll_frame_circles, border_color ="white", border_width_checked=11, fg_color="white",
                                        variable=self.radio_var, text="Default",
                                        command = color_white)
-      circle_button.grid(row=len(self.circle_type_list),column=0,padx=20,pady=20, sticky="w")
-      self.circle_type_list["white"] = circle_button
+      circle_button.grid(row=len(self.circle_radio_list),column=0,padx=20,pady=20, sticky="w")
+      self.circle_radio_list["white"] = circle_button
       #Canvas GUI
       self.canvas = ctk.CTkCanvas(master=self, width = 900, height = 800, highlightcolor="blue")
       self.canvas.grid(row=0,column=2, pady=(50))
       
       
       
-      self.canvas.bind("<Button-1>", self.callback)
-      self.canvas.bind("<B1-Motion>", self.drag)
-      self.canvas.bind("<B1-ButtonRelease>", self.release)
-        
+      self.canvas.bind("<Control-Button-1>", self.callback)
+      self.canvas.bind("<Control-B1-Motion>", self.drag)
+      self.canvas.bind("<Control-B1-ButtonRelease>", self.release)
+      self.canvas.bind("<Shift-B1-ButtonRelease>", self.add_text_selected_items)
+      self.canvas.bind("<Shift-B1-Motion>", self.drag)
+      self.canvas.bind("<Shift-Button-1>", self.callback)
           
           
       
@@ -75,6 +104,11 @@ class App(ctk.CTk):
       self.canvas_under_frame = ctk.CTkFrame(self, width=900,height=200)
       self.canvas_under_frame.grid(row=1,column=2)
       self.rect_id = self.canvas.create_rectangle(0,0,0,0,dash=(2,2),fill='',outline='black')
+      
+      
+      
+      
+      
     
   def create_well_grid_event(self, grid_size:str):
     
@@ -89,10 +123,10 @@ class App(ctk.CTk):
     #Algorithm creates letters/num seperately from circles to be easier identify which itemIDs belong to circles
     i = space
     for i in range(rows):
-      self.canvas.create_text(15,space*(i+1),text=letters_list[i], fill="black", font=('Helvetica 15'), tags = "letter")
+      self.canvas.create_text(15,space*(i+1),text=letters_list[i], fill="black", font=self.font, tags = "letter")
       
     for i in range(cols):
-      self.canvas.create_text(space*(i+1),15,text=i+1, fill="black", font=('Helvetica 15'), tags = "num")
+      self.canvas.create_text(space*(i+1),15,text=i+1, fill="black", font=self.font, tags = "num")
     
     for i in range (cols):
       for j in range(rows):
@@ -103,7 +137,8 @@ class App(ctk.CTk):
         coords_circle = x,y
         self.canvas_items_map[id] = coords_circle
         
-    print(self.canvas_items_map[27])    
+        
+     
     
     
   
@@ -115,11 +150,14 @@ class App(ctk.CTk):
     self.canvas.coords(self.rect_id,0,0,0,0)
     a= self.canvas.find_overlapping(rectx1,recty1,rectx2,recty2)
     #Ignores items that aren't inner circle
+    item_list = []
     for item in a:
-      if item > non_circle_items and item%2==1:
-        print(item) 
-        self.canvas.itemconfig(item,fill=self.color)
+      if item in self.canvas_items_map:
+        item_list.append(item)
+        self.canvas.itemconfig(item,fill=self.color, tags=self.color)
+        
         #self.canvas.create_text(self.canvas_items_map[item],text="Test", tags = "text-item")
+    self.circle_color_map[self.color] = item_list
         
   
     
@@ -134,7 +172,6 @@ class App(ctk.CTk):
     print("clicked at", event.x,event.y)
     rectx1, rectx2 = event.x, event.x
     recty1,recty2= event.y,event.y
-    self.canvas.delete("text-item")
   
   def ask_color(self):
     pick_color = AskColor() # open the color picker
@@ -147,17 +184,63 @@ class App(ctk.CTk):
     circle_button = ctk.CTkRadioButton(self.scroll_frame_circles, border_color =color,border_width_checked=11,
                                        variable=self.radio_var, text="", fg_color= color,
                                        command = change_color)
-    circle_button.grid(row=len(self.circle_type_list),column=0,padx=20,pady=20, sticky="w")
-    self.circle_type_list[color] = circle_button
+    circle_button.grid(row=len(self.circle_radio_list),column=0,padx=20,pady=20, sticky="w")
+    self.circle_radio_list[color] = circle_button
     
   def add_name_radiobutton(self):
     if self.color != "white":
       input_name = ctk.CTkInputDialog(text="Write Circle Name",title="Circle Name")
       name = input_name.get_input()
-      self.circle_type_list[self.color].configure(text=name)
+      self.circle_radio_list[self.color].configure(text=name)
     
+  def add_text_to_circletype(self):
+    input_text = ctk.CTkInputDialog(text="Write Text",title="Add Text")
+    text = input_text.get_input()
+    colored_items = self.circle_color_map[self.color]    
+    for item in colored_items:
+      coords_ = self.canvas_items_map[item]
+      self.canvas.create_text(coords_, text=text, tags=text, font = self.font)
+    
+  def remove_text_for_circles(self):
+    self.canvas.itemconfigure(self.color,fill=self.color)
+  
+  def add_text_selected_items(self,event):
+    global rectx1, recty1, rectx2, recty2
+    print("released at", event.x, event.y)
+    
+    self.canvas.coords(self.rect_id,0,0,0,0)
+    input_text = ctk.CTkInputDialog(text="Write Text",title="Add Text")
+    text = input_text.get_input()
+    a= self.canvas.find_overlapping(rectx1,recty1,rectx2,recty2)
+    #Ignores items that aren't inner circle
+    for item in a:
+      if item in self.canvas_items_map: 
+        coords_ = self.canvas_items_map[item]
+        
+        if item in self.canvas_id_text_map:
+          self.canvas.delete(self.canvas_id_text_map[item])
+      
+        text_item = self.canvas.create_text(coords_, text=text, tags="text", font = self.font)
+        self.canvas_id_text_map[item] = text_item
+        
+        
+        #self.canvas.create_text(self.canvas_items_map[item],text="Test", tags = "text-item")
+  
+  def change_font(self, var):
+    var
+    font = self.font_optionmenu.get()
+    size = self.font_size_optionmenu.get()
+    style = font + " " + size
+    self.font = style
+    print(self.font)
+  
+    
+    
+    
+    #Get 2 option menu valeus, concat them to 1 string with a empty space divider, change self.font to the new string  
     
     
 if __name__ == "__main__":
     app = App()
-    app.mainloop()  
+    app.mainloop() 
+    
