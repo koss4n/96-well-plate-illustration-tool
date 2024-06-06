@@ -10,13 +10,17 @@ grid_size_list:list[str] = ["96"]
 global rectx1, recty1, rectyx2, recty2, non_circle_items
 non_circle_items:int
 rectx1, recty1, rectyx2, recty2, non_circle_items = 0,0,0,0,0
+font_list = ["Helvetica", "Sans", "System", "Terminal", "Ms", "Times"]
+font_size_list = ["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20"]
 class App(ctk.CTk):
   def __init__(self):
       super().__init__()
       self.color = "white"
+      self.font = "Helvetica 15"
       self.circle_radio_list ={}
       self.circle_color_map ={}
       self.canvas_items_map = {}
+      self.canvas_id_text_map = {}
       self.title("Well Template.py")
       self.geometry(f"{1600}x{900}")
       # configure grid layout (2x2)
@@ -52,9 +56,23 @@ class App(ctk.CTk):
                                               command = self.add_text_to_circletype)
       self.add_text_button.grid(row=4, column = 0, padx = 20, pady=(40,0))
       
+      #Optionmenus for choosing text style
+      self.font_optionmenu = ctk.CTkOptionMenu(self.sidebar_frame, values=font_list,
+                                               command = self.change_font)
+      self.font_optionmenu.set("Helvetica")
+      self.font_optionmenu.grid(row=5,column=0,padx=(0,55),pady=20)
+    
+    #Optionmenus for choosing text style
+      self.font_size_optionmenu = ctk.CTkOptionMenu(self.sidebar_frame, values=font_size_list, width=20,
+                                                   command = self.change_font)
+      self.font_size_optionmenu.set("15")
+      self.font_size_optionmenu.grid(row=5,column=0,padx=(145,0),pady=20)
+      
+
+      
       self.remove_text_button = ctk.CTkButton(self.sidebar_frame, text = "Remove Text",
                                               command = self.remove_text_for_circles)
-      self.remove_text_button.grid(row=5, column = 0, padx = 20, pady=(200,0))
+      self.remove_text_button.grid(row=6, column = 0, padx = 20, pady=(200,0))
       
       #Scroll frame with circle types
       
@@ -100,10 +118,10 @@ class App(ctk.CTk):
     #Algorithm creates letters/num seperately from circles to be easier identify which itemIDs belong to circles
     i = space
     for i in range(rows):
-      self.canvas.create_text(15,space*(i+1),text=letters_list[i], fill="black", font=('Helvetica 15'), tags = "letter")
+      self.canvas.create_text(15,space*(i+1),text=letters_list[i], fill="black", font=self.font, tags = "letter")
       
     for i in range(cols):
-      self.canvas.create_text(space*(i+1),15,text=i+1, fill="black", font=('Helvetica 15'), tags = "num")
+      self.canvas.create_text(space*(i+1),15,text=i+1, fill="black", font=self.font, tags = "num")
     
     for i in range (cols):
       for j in range(rows):
@@ -114,7 +132,8 @@ class App(ctk.CTk):
         coords_circle = x,y
         self.canvas_items_map[id] = coords_circle
         
-    print(self.canvas_items_map[27])    
+        
+     
     
     
   
@@ -175,7 +194,7 @@ class App(ctk.CTk):
     colored_items = self.circle_color_map[self.color]    
     for item in colored_items:
       coords_ = self.canvas_items_map[item]
-      self.canvas.create_text(coords_, text=text, tags=text)
+      self.canvas.create_text(coords_, text=text, tags=text, font = self.font)
     
   def remove_text_for_circles(self):
     self.canvas.itemconfigure(self.color,fill=self.color)
@@ -190,13 +209,33 @@ class App(ctk.CTk):
     a= self.canvas.find_overlapping(rectx1,recty1,rectx2,recty2)
     #Ignores items that aren't inner circle
     for item in a:
-      if item > non_circle_items and item%2==1: 
+      if item > non_circle_items and item%2==1 and item < 214: 
         coords_ = self.canvas_items_map[item]
-        self.canvas.create_text(coords_, text=text, tags=text)
+        
+        if item in self.canvas_id_text_map:
+          self.canvas.delete(self.canvas_id_text_map[item])
+      
+        text_item = self.canvas.create_text(coords_, text=text, tags="text", font = self.font)
+        self.canvas_id_text_map[item] = text_item
+        
+        
         #self.canvas.create_text(self.canvas_items_map[item],text="Test", tags = "text-item")
+  
+  def change_font(self, var):
+    var
+    font = self.font_optionmenu.get()
+    size = self.font_size_optionmenu.get()
+    style = font + " " + size
+    self.font = style
+    print(self.font)
+  
     
+    
+    
+    #Get 2 option menu valeus, concat them to 1 string with a empty space divider, change self.font to the new string  
     
     
 if __name__ == "__main__":
     app = App()
-    app.mainloop()  
+    app.mainloop() 
+    
