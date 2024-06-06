@@ -104,6 +104,11 @@ class App(ctk.CTk):
       self.canvas_under_frame = ctk.CTkFrame(self, width=900,height=200)
       self.canvas_under_frame.grid(row=1,column=2)
       self.rect_id = self.canvas.create_rectangle(0,0,0,0,dash=(2,2),fill='',outline='black')
+      
+      
+      
+      
+      
     
   def create_well_grid_event(self, grid_size:str):
     
@@ -147,7 +152,7 @@ class App(ctk.CTk):
     #Ignores items that aren't inner circle
     item_list = []
     for item in a:
-      if item > non_circle_items and item%2==1:
+      if item in self.canvas_items_map:
         item_list.append(item)
         self.canvas.itemconfig(item,fill=self.color, tags=self.color)
         
@@ -209,7 +214,7 @@ class App(ctk.CTk):
     a= self.canvas.find_overlapping(rectx1,recty1,rectx2,recty2)
     #Ignores items that aren't inner circle
     for item in a:
-      if item > non_circle_items and item%2==1 and item < 214: 
+      if item in self.canvas_items_map: 
         coords_ = self.canvas_items_map[item]
         
         if item in self.canvas_id_text_map:
