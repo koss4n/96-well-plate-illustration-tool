@@ -27,7 +27,7 @@ class App(ctk.CTk):
       
       self.sidebar_frame = ctk.CTkFrame(self, width=140, corner_radius=0)
       self.sidebar_frame.grid(row=0, column=0, rowspan=4, sticky="nsew")
-      self.sidebar_frame.grid_rowconfigure(4, weight=1)
+      self.sidebar_frame.grid_rowconfigure(6, weight=1)
       
       #Logo for app
       self.logo_label = ctk.CTkLabel(self.sidebar_frame, text="Well Template App", font=ctk.CTkFont(size=20, weight="bold"))
@@ -50,11 +50,11 @@ class App(ctk.CTk):
       
       self.add_text_button = ctk.CTkButton(self.sidebar_frame, text = "Add Text",
                                               command = self.add_text_to_circletype)
-      self.add_text_button.grid(row=4, column = 0, padx = 20, pady=(0,80))
+      self.add_text_button.grid(row=4, column = 0, padx = 20, pady=(40,0))
       
       self.remove_text_button = ctk.CTkButton(self.sidebar_frame, text = "Remove Text",
                                               command = self.remove_text_for_circles)
-      self.remove_text_button.grid(row=5, column = 0, padx = 20, pady=(40,0))
+      self.remove_text_button.grid(row=5, column = 0, padx = 20, pady=(200,0))
       
       #Scroll frame with circle types
       
