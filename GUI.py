@@ -2,6 +2,7 @@
 import customtkinter as ctk
 from CTkMessagebox import CTkMessagebox
 from CTkColorPicker import *
+from PIL import Image, ImageTk
 
 ctk.set_appearance_mode("System")  # Modes: "System" (standard), "Dark", "Light"
 ctk.set_default_color_theme("blue")  # Themes: "blue" (standard), "green", "dark-blue"
@@ -12,9 +13,11 @@ non_circle_items:int
 rectx1, recty1, rectyx2, recty2, non_circle_items = 0,0,0,0,0
 font_list = ["Helvetica", "Sans", "System", "Terminal", "Ms", "Times"]
 font_size_list = ["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20"]
+images=[]
 class App(ctk.CTk):
   def __init__(self):
       super().__init__()
+      self.radius = 0
       self.color = "white"
       self.font = "Helvetica 15"
       self.circle_radio_list ={}
@@ -103,7 +106,7 @@ class App(ctk.CTk):
       
       self.canvas_under_frame = ctk.CTkFrame(self, width=900,height=200)
       self.canvas_under_frame.grid(row=1,column=2)
-      self.rect_id = self.canvas.create_rectangle(0,0,0,0,dash=(2,2),fill='',outline='black')
+      
       
       
       
@@ -111,9 +114,13 @@ class App(ctk.CTk):
       
     
   def create_well_grid_event(self, grid_size:str):
+    self.canvas.addtag_all("del")
+    self.canvas.delete("del")
+    self.rect_id = self.canvas.create_rectangle(0,0,0,0,dash=(2,2),fill='',outline='black')
     
     if grid_size == "96":
       self.create_canvas(space=70, radius=30,rows=8,cols=12)
+      self.radius = 30
     
   #Creates a canvas from the specified values
   def create_canvas(self, space:int, radius:int, rows:int, cols:int):
@@ -233,10 +240,20 @@ class App(ctk.CTk):
     style = font + " " + size
     self.font = style
     print(self.font)
-  
+    a= self.create_rectangle(200,200,300,300,fill="green",alpha=.5)
+    print(a)
+   
     
-    
-    
+  def create_rectangle(self,x1, y1, x2, y2, **kwargs):
+    if 'alpha' in kwargs:
+        alpha = int(kwargs.pop('alpha') * 255)
+        fill = kwargs.pop('fill')
+        fill = app.winfo_rgb(fill) + (alpha,)
+        image = Image.new('RGBA', (x2-x1, y2-y1), fill)
+        images.append(ImageTk.PhotoImage(image))
+        self.canvas.create_image(x1, y1, image=images[-1], anchor='nw')
+    self.canvas.create_rectangle(x1, y1, x2, y2, **kwargs)
+
     #Get 2 option menu valeus, concat them to 1 string with a empty space divider, change self.font to the new string  
     
     
