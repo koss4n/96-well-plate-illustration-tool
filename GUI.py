@@ -97,7 +97,7 @@ class App(ctk.CTk):
       self.canvas.bind("<Control-Button-1>", self.callback)
       self.canvas.bind("<Control-B1-Motion>", self.drag)
       self.canvas.bind("<Control-B1-ButtonRelease>", self.release)
-      self.canvas.bind("<Shift-B1-ButtonRelease>", self.add_text_selected_items)
+      self.canvas.bind("<Shift-B1-ButtonRelease>", self.add_rect_selected_area)
       self.canvas.bind("<Shift-B1-Motion>", self.drag)
       self.canvas.bind("<Shift-Button-1>", self.callback)
           
@@ -137,12 +137,13 @@ class App(ctk.CTk):
     
     for i in range (cols):
       for j in range(rows):
-        x = space*(i+1), 
+        x = space*(i+1) 
         y = space*(j+1)
         self.canvas.create_aa_circle(x,y,radius=radius+2,fill="black")
         id = self.canvas.create_aa_circle(x,y,radius=radius,fill="white")
         coords_circle = x,y
         self.canvas_items_map[id] = coords_circle
+        
         
         
      
@@ -243,18 +244,51 @@ class App(ctk.CTk):
     a= self.create_rectangle(200,200,300,300,fill="green",alpha=.5)
     print(a)
    
+    #Get 2 option menu valeus, concat them to 1 string with a empty space divider, change self.font to the new string 
     
+     
   def create_rectangle(self,x1, y1, x2, y2, **kwargs):
     if 'alpha' in kwargs:
         alpha = int(kwargs.pop('alpha') * 255)
         fill = kwargs.pop('fill')
-        fill = app.winfo_rgb(fill) + (alpha,)
-        image = Image.new('RGBA', (x2-x1, y2-y1), fill)
+        fill = app.winfo_rgb(fill)
+        fill = fill[0]%256,fill[1]%256,fill[2]%256
+        fill += (alpha,)
+        print(fill)
+        image = Image.new('RGBA', (x2-x1, y2-y1), color=fill)
         images.append(ImageTk.PhotoImage(image))
         self.canvas.create_image(x1, y1, image=images[-1], anchor='nw')
     self.canvas.create_rectangle(x1, y1, x2, y2, **kwargs)
 
-    #Get 2 option menu valeus, concat them to 1 string with a empty space divider, change self.font to the new string  
+  def add_rect_selected_area(self,event):
+    global rectx1, recty1, rectx2, recty2
+    print("released at", event.x, event.y)
+    
+    self.canvas.coords(self.rect_id,0,0,0,0)
+    a= self.canvas.find_overlapping(rectx1,recty1,rectx2,recty2)
+    #Ignores items that aren't inner circle
+    b,c = 0,0
+    i,j = 0,1
+    while b ==0:
+      if a[i] in self.canvas_items_map:
+        b = a[i]
+      i +=1
+    while c == 0:
+      if a[len(a)-j] in self.canvas_items_map:
+        c = a[len(a)-j]
+      j+=1
+    
+    coords1 = self.canvas_items_map[b]
+    coords2 = self.canvas_items_map[c]
+    print(coords1)
+    l = self.radius+4
+    print(l)
+    x1, y1 = coords1
+    x2,y2 = coords2
+    print(x1)
+    self.create_rectangle(x1-l, y1-l, x2+l, y2+l, fill=self.color, alpha=.2)
+  
+    
     
     
 if __name__ == "__main__":
