@@ -97,7 +97,7 @@ class App(ctk.CTk):
       self.canvas.bind("<Control-Button-1>", self.callback)
       self.canvas.bind("<Control-B1-Motion>", self.drag)
       self.canvas.bind("<Control-B1-ButtonRelease>", self.release)
-      self.canvas.bind("<Shift-B1-ButtonRelease>", self.add_rect_selected_area)
+      self.canvas.bind("<Shift-B1-ButtonRelease>", self.add_text_selected_items)
       self.canvas.bind("<Shift-B1-Motion>", self.drag)
       self.canvas.bind("<Shift-Button-1>", self.callback)
           
@@ -221,18 +221,18 @@ class App(ctk.CTk):
     text = input_text.get_input()
     a= self.canvas.find_overlapping(rectx1,recty1,rectx2,recty2)
     #Ignores items that aren't inner circle
+    
+#   #checks if item id is inner circle, and if it already exists as a text-item or not.
     for item in a:
-      if item in self.canvas_items_map: 
+      if item in self.canvas_items_map and item in self.canvas_id_text_map: 
+        text_item = self.canvas_id_text_map[item] 
+        self.canvas.itemconfigure(text_item, text=text)
+
+      elif item in self.canvas_items_map and item not in self.canvas_id_text_map:
         coords_ = self.canvas_items_map[item]
-        
-        if item in self.canvas_id_text_map:
-          self.canvas.delete(self.canvas_id_text_map[item])
-      
         text_item = self.canvas.create_text(coords_, text=text, tags="text", font = self.font)
         self.canvas_id_text_map[item] = text_item
         
-        
-        #self.canvas.create_text(self.canvas_items_map[item],text="Test", tags = "text-item")
   
   def change_font(self, var):
     var
