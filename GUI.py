@@ -2,6 +2,7 @@
 import customtkinter as ctk
 from CTkMessagebox import CTkMessagebox
 from CTkColorPicker import *
+from PIL import Image, ImageTk
 
 ctk.set_appearance_mode("System")  # Modes: "System" (standard), "Dark", "Light"
 ctk.set_default_color_theme("blue")  # Themes: "blue" (standard), "green", "dark-blue"
@@ -12,9 +13,11 @@ non_circle_items:int
 rectx1, recty1, rectyx2, recty2, non_circle_items = 0,0,0,0,0
 font_list = ["Helvetica", "Sans", "System", "Terminal", "Ms", "Times"]
 font_size_list = ["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20"]
+images=[]
 class App(ctk.CTk):
   def __init__(self):
       super().__init__()
+      self.radius = 0
       self.color = "white"
       self.font = "Helvetica 15"
       self.circle_radio_list ={}
@@ -94,7 +97,7 @@ class App(ctk.CTk):
       self.canvas.bind("<Control-Button-1>", self.callback)
       self.canvas.bind("<Control-B1-Motion>", self.drag)
       self.canvas.bind("<Control-B1-ButtonRelease>", self.release)
-      self.canvas.bind("<Shift-B1-ButtonRelease>", self.add_text_selected_items)
+      self.canvas.bind("<Shift-B1-ButtonRelease>", self.add_rect_selected_area)
       self.canvas.bind("<Shift-B1-Motion>", self.drag)
       self.canvas.bind("<Shift-Button-1>", self.callback)
           
@@ -103,7 +106,7 @@ class App(ctk.CTk):
       
       self.canvas_under_frame = ctk.CTkFrame(self, width=900,height=200)
       self.canvas_under_frame.grid(row=1,column=2)
-      self.rect_id = self.canvas.create_rectangle(0,0,0,0,dash=(2,2),fill='',outline='black')
+      
       
       
       
@@ -111,9 +114,13 @@ class App(ctk.CTk):
       
     
   def create_well_grid_event(self, grid_size:str):
+    self.canvas.addtag_all("del")
+    self.canvas.delete("del")
+    self.rect_id = self.canvas.create_rectangle(0,0,0,0,dash=(2,2),fill='',outline='black')
     
     if grid_size == "96":
       self.create_canvas(space=70, radius=30,rows=8,cols=12)
+      self.radius = 30
     
   #Creates a canvas from the specified values
   def create_canvas(self, space:int, radius:int, rows:int, cols:int):
@@ -130,12 +137,13 @@ class App(ctk.CTk):
     
     for i in range (cols):
       for j in range(rows):
-        x = space*(i+1), 
+        x = space*(i+1) 
         y = space*(j+1)
         self.canvas.create_aa_circle(x,y,radius=radius+2,fill="black")
         id = self.canvas.create_aa_circle(x,y,radius=radius,fill="white")
         coords_circle = x,y
         self.canvas_items_map[id] = coords_circle
+        
         
         
      
@@ -232,12 +240,52 @@ class App(ctk.CTk):
     size = self.font_size_optionmenu.get()
     style = font + " " + size
     self.font = style
-    print(self.font)
+   
+    #Get 2 option menu valeus, concat them to 1 string with a empty space divider, change self.font to the new string 
+    
+     
+  def create_rectangle(self,x1, y1, x2, y2, **kwargs):
+    if 'alpha' in kwargs:
+        alpha = int(kwargs.pop('alpha') * 255)
+        fill = kwargs.pop('fill')
+        fill = app.winfo_rgb(fill)
+        fill = fill[0]%256,fill[1]%256,fill[2]%256
+        fill += (alpha,)
+        print(fill)
+        image = Image.new('RGBA', (x2-x1, y2-y1), color=fill)
+        images.append(ImageTk.PhotoImage(image))
+        self.canvas.create_image(x1, y1, image=images[-1], anchor='nw')
+    self.canvas.create_rectangle(x1, y1, x2, y2, **kwargs)
+
+  def add_rect_selected_area(self,event):
+    global rectx1, recty1, rectx2, recty2
+    print("released at", event.x, event.y)
+    
+    self.canvas.coords(self.rect_id,0,0,0,0)
+    a= self.canvas.find_overlapping(rectx1,recty1,rectx2,recty2)
+    #Ignores items that aren't inner circle
+    b,c = 0,0
+    i,j = 0,1
+    while b ==0:
+      if a[i] in self.canvas_items_map:
+        b = a[i]
+      i +=1
+    while c == 0:
+      if a[len(a)-j] in self.canvas_items_map:
+        c = a[len(a)-j]
+      j+=1
+    
+    coords1 = self.canvas_items_map[b]
+    coords2 = self.canvas_items_map[c]
+    print(coords1)
+    l = self.radius+4
+    print(l)
+    x1, y1 = coords1
+    x2,y2 = coords2
+    print(x1)
+    self.create_rectangle(x1-l, y1-l, x2+l, y2+l, fill=self.color, alpha=.2)
   
     
-    
-    
-    #Get 2 option menu valeus, concat them to 1 string with a empty space divider, change self.font to the new string  
     
     
 if __name__ == "__main__":
