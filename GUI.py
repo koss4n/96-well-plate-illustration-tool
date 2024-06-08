@@ -240,9 +240,6 @@ class App(ctk.CTk):
     size = self.font_size_optionmenu.get()
     style = font + " " + size
     self.font = style
-    print(self.font)
-    a= self.create_rectangle(200,200,300,300,fill="green",alpha=.5)
-    print(a)
    
     #Get 2 option menu valeus, concat them to 1 string with a empty space divider, change self.font to the new string 
     
