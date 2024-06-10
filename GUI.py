@@ -26,6 +26,8 @@ class App(ctk.CTk):
       self.canvas_id_text_map = {}
       self.actions_stack = []
       self.item_changes_map = {}
+      self.tab_map = {}
+      self.tab_name_map = {}
       self.title("Well Template.py")
       self.geometry(f"{1600}x{900}")
       # configure grid layout (2x2)
@@ -76,7 +78,7 @@ class App(ctk.CTk):
 
       
       self.remove_text_button = ctk.CTkButton(self.sidebar_frame, text = "Remove Text",
-                                              command = self.remove_text_for_circles)
+                                              command = self.lift)
       self.remove_text_button.grid(row=6, column = 0, padx = 20, pady=(200,0))
       
       #Scroll frame with circle types
@@ -91,14 +93,18 @@ class App(ctk.CTk):
       circle_button.grid(row=len(self.circle_radio_list),column=0,padx=20,pady=20, sticky="w")
       self.circle_radio_list["white"] = circle_button
       #Canvas GUI
-      self.canvas = ctk.CTkCanvas(master=self, width = 900, height = 800, highlightcolor="blue")
+      self.canvas = ctk.CTkCanvas(master=self, width = 900, height = 700, highlightcolor="blue")
       self.canvas.grid(row=0,column=2, pady=(50))
+      self.tab_name_map["Tab 1"] = self.canvas
       
+      self.seg = ctk.CTkSegmentedButton(self, width = 100, height = 30, corner_radius= 30, values=["Tab 1","+"]
+                                        , command = self.new_tab)
+      self.seg.set("Tab 1")
+      self.seg.grid(row=0, column = 2,padx = (120,0),pady=(20,0), sticky="nw")
       
-      
-      self.canvas.bind("<Control-Button-1>", self.callback)
-      self.canvas.bind("<Control-B1-Motion>", self.drag)
-      self.canvas.bind("<Control-B1-ButtonRelease>", self.release)
+      self.canvas.bind_all("<Control-Button-1>", self.callback)
+      self.canvas.bind_all("<Control-B1-Motion>", self.drag)
+      self.canvas.bind_all("<Control-B1-ButtonRelease>", self.release)
       self.canvas.bind("<Shift-B1-ButtonRelease>", self.add_text_selected_items)
       self.canvas.bind("<Shift-B1-Motion>", self.drag)
       self.canvas.bind("<Shift-Button-1>", self.callback)
@@ -106,7 +112,7 @@ class App(ctk.CTk):
       self.canvas.bind("<Alt-B1-Motion>", self.drag)
       self.canvas.bind("<Alt-Button-1>", self.callback)
       self.bind("<Control-z>", self.undo_action)
-          
+                
           
       
       
@@ -319,7 +325,100 @@ class App(ctk.CTk):
     if prev_action[1] == "item_created":
       for item in items:
         self.canvas.delete(item)
+        
+  def new_tab(self, tab_name):
+    self.stash_data()
+    if tab_name == "+":
+      input_name = ctk.CTkInputDialog(text="Write Circle Name",title="Circle Name")
+      input_name.lift()
+      name = input_name.get_input()
+      if name == "":
+        name = "New Tab"
       
+      self.canvas = ctk.CTkCanvas(master=self, width = 900, height = 800, highlightcolor="blue")
+      self.canvas.grid(row=0,column=2, pady=(50))
+      self.stash_data()
+      self.tab_name_map[name] = self.canvas
+      
+      value_list = self.seg._value_list.copy()
+      index = len(value_list)-1
+      value_list.insert(index,name)
+      self.seg.configure(values = value_list)
+      self.seg.set(value_list[index])
+      ctk.CTk.lift(self.canvas)
+    else:
+      self.canvas = self.tab_name_map[tab_name] 
+      self.update_app_vars()
+      ctk.CTk.lift(self.canvas)
+    
+  
+  def stash_data(self):
+    tuple = (self.circle_color_map.copy(), self.canvas_items_map.copy(),self.canvas_id_text_map.copy(),self.actions_stack.copy(),self.item_changes_map.copy())
+    self.tab_map[self.canvas] =  tuple
+    
+  def update_app_vars(self):
+      tuple = self.tab_map[self.canvas]
+      self.circle_color_map =tuple[0]
+      self.canvas_items_map = tuple[1]
+      self.canvas_id_text_map =tuple[2]
+      self.actions_stack = tuple[3]
+      self.item_changes_map = tuple[4]
+      
+  def lift(self):
+
+      tempr = self.radius
+      tempc = self.color
+      tempf=self.font
+      tempcr=self.circle_radio_list
+      tempcc = self.circle_color_map.copy()
+      tempci = self.canvas_items_map.copy()
+      tempid = self.canvas_id_text_map.copy()
+      temp = self.actions_stack.copy()
+      temp4 = self.item_changes_map.copy()
+      tuple = (tempr,tempc,tempf,tempcr,tempcc,tempci,tempid,temp,temp4)
+      self.tab_map[self.canvas] = tuple
+      if self.canvas == self.tab1:
+          self.canvas = self.tab2
+          tuple = self.tab_map[self.tab2]
+          self.radius = tuple[0]
+          self.color= tuple[1]
+          self.font =tuple[2]
+          self.circle_radio_list = tuple[3]
+          self.circle_color_map =tuple[4]
+          self.canvas_items_map = tuple[5]
+          self.canvas_id_text_map =tuple[6]
+          self.actions_stack = tuple[7]
+          self.item_changes_map = tuple[8]
+          ctk.CTk.lift(self.canvas)
+          print(self.canvas)
+      
+      elif self.canvas == self.tab2:
+          self.canvas = self.tab1
+          tuple = self.tab_map[self.canvas]
+          self.radius = tuple[0]
+          self.color= tuple[1]
+          self.font =tuple[2]
+          self.circle_radio_list = tuple[3]
+          self.circle_color_map =tuple[4]
+          self.canvas_items_map = tuple[5]
+          self.canvas_id_text_map =tuple[6]
+          self.actions_stack = tuple[7]
+          self.item_changes_map = tuple[8]
+          ctk.CTk.lift(self.canvas)
+          print(self.canvas)
+          self.canvas.bind("<Control-Button-1>", self.callback)
+      self.canvas.bind("<Control-B1-Motion>", self.drag)
+      self.canvas.bind("<Control-B1-ButtonRelease>", self.release)
+      self.canvas.bind("<Shift-B1-ButtonRelease>", self.add_text_selected_items)
+      self.canvas.bind("<Shift-B1-Motion>", self.drag)
+      self.canvas.bind("<Shift-Button-1>", self.callback)
+      self.canvas.bind("<Alt-B1-ButtonRelease>", self.add_rect_selected_area)
+      self.canvas.bind("<Alt-B1-Motion>", self.drag)
+      self.canvas.bind("<Alt-Button-1>", self.callback)
+        
+                          
+    
+    
     
 if __name__ == "__main__":
     app = App()
