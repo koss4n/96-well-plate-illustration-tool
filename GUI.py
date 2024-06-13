@@ -2,7 +2,7 @@
 import customtkinter as ctk
 from CTkMessagebox import CTkMessagebox
 from CTkColorPicker import *
-from PIL import Image, ImageTk
+from PIL import Image, ImageTk, ImageDraw
 
 ctk.set_appearance_mode("System")  # Modes: "System" (standard), "Dark", "Light"
 ctk.set_default_color_theme("blue")  # Themes: "blue" (standard), "green", "dark-blue"
@@ -60,6 +60,7 @@ class App(ctk.CTk):
         self.color = "white"
         self.font = "Helvetica 15"
         self.circle_radio_list = {}
+        # Color str: list[ids], smallest, largest
         self.circle_color_map = {}
         self.canvas_items_map = {}
         self.canvas_id_text_map = {}
@@ -111,7 +112,7 @@ class App(ctk.CTk):
         self.change_name_circle.grid(row=3, column=0, padx=20, pady=(40, 0))
 
         self.add_text_button = ctk.CTkButton(
-            self.sidebar_frame, text="Add Text", command=self.add_text_to_circletype
+            self.sidebar_frame, text="Add Text", command=self.concentration_gradient
         )
         self.add_text_button.grid(row=4, column=0, padx=20, pady=(40, 0))
 
@@ -235,6 +236,7 @@ class App(ctk.CTk):
                 x = space * (i + 1)
                 y = space * (j + 1)
                 self.canvas.create_aa_circle(x, y, radius=radius + 2, fill="black")
+                # +1 r, +1 y ?
                 id = self.canvas.create_aa_circle(x, y, radius=radius, fill="white")
                 coords_circle = x, y
                 self.canvas_items_map[id] = coords_circle
@@ -427,9 +429,7 @@ class App(ctk.CTk):
     def new_tab(self, tab_name):
         self.stash_data()
         if tab_name == "+":
-            input_name = ctk.CTkInputDialog(
-                text="Write Circle Name", title="Circle Name"
-            )
+            input_name = ctk.CTkInputDialog(text="Write Tab Name", title="New Tab Name")
             input_name.lift()
             name = input_name.get_input()
             if name == "":
@@ -460,6 +460,7 @@ class App(ctk.CTk):
                 self.seg.set("")
                 return
 
+            value_list = self.seg._value_list.copy()
             self.canvas = ctk.CTkCanvas(
                 master=self, width=900, height=800, highlightcolor="blue"
             )
@@ -494,6 +495,89 @@ class App(ctk.CTk):
         self.canvas_id_text_map = tuple[2]
         self.actions_stack = tuple[3]
         self.item_changes_map = tuple[4]
+
+    def grab_current_state(self):
+        self.circle_color_map
+        for id in self.canvas_items_map:
+            a = self.item_changes_map[id][-1]
+
+            if a not in self.circle_color_map:
+                self.circle_color_map[a] = [id]
+            else:
+                self.circle_color_map[a].append(id)
+        keys = self.circle_color_map.keys()
+        for key in keys:
+            list_id = self.circle_color_map[key]
+            smallest_val = 1000000
+            largest_val = 0
+            for id in list_id:
+                if id in self.canvas_id_text_map:
+                    b = self.canvas_id_text_map[id]
+                    c = self.item_changes_map[b][-1]
+
+                    value = int(c)
+
+                    if value > largest_val:
+                        largest_val = value
+                    elif value < smallest_val:
+                        smallest_val = value
+            tuple = (list_id, smallest_val, largest_val)
+            self.circle_color_map[key] = tuple
+
+        print(self.circle_color_map)
+
+    def create_conc_circle(self, x, y, diameter, **kwargs):
+
+        if "alpha" in kwargs:
+            alpha = int(kwargs.pop("alpha") * 255)
+            fill = kwargs.pop("fill")
+            fill = app.winfo_rgb(fill)
+            fill = fill[0] % 256, fill[1] % 256, fill[2] % 256
+            fill += (alpha,)
+            image = Image.new("RGBA", (diameter, diameter), color=(0, 0, 0, 0))
+            draw = ImageDraw.Draw(image)
+            draw.ellipse((0, 0, diameter, diameter), fill=fill)
+            images.append(ImageTk.PhotoImage(image))
+            self.canvas.create_image(x, y, image=images[-1])
+
+    def test(self):
+        for item in self.canvas_items_map:
+            coords = self.canvas_items_map[item]
+            x, y = coords
+            self.create_conc_circle(
+                x, y, self.radius * 2 - 4, fill=self.color, alpha=0.2
+            )
+
+    def concentration_gradient(self):
+        self.grab_current_state()
+        value_list = self.seg._value_list.copy()
+        self.canvas = ctk.CTkCanvas(
+            master=self, width=900, height=800, highlightcolor="blue"
+        )
+        self.canvas.grid(row=0, column=2, pady=(50))
+        self.stash_data()
+        self.tab_name_map["Conc"] = self.canvas
+
+        index = len(value_list) - 1
+        value_list.insert(index, "Conc")
+        self.seg.configure(values=value_list)
+        self.seg.set(value_list[index])
+        ctk.CTk.lift(self.canvas)
+        self.create_well_grid_event("96")
+        for color in self.circle_color_map:
+
+            items, _, largest = self.circle_color_map[color]
+
+            for item in items:
+                coords = self.canvas_items_map[item]
+                x, y = coords
+                b = self.canvas_id_text_map[item]
+                c = self.item_changes_map[b][-1]
+                g = int(c)
+                print(g)
+                self.create_conc_circle(
+                    x, y, self.radius * 2 - 2, fill=color, alpha=(g / largest) * 0.9
+                )
 
 
 if __name__ == "__main__":
