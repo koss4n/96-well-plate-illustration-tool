@@ -24,6 +24,9 @@ LETTER_LIST: list[str] = [
     "P",
 ]
 GRID_SIZE_LIST: list[str] = ["96"]
+CANVAS_HEIGHT = 900
+CANVAS_WIDTH = 1300
+CANVAS_GRIDY = (20, 0)
 global rectx1, recty1, rectyx2, recty2, non_circle_items
 non_circle_items: int
 rectx1, recty1, rectyx2, recty2, non_circle_items = 0, 0, 0, 0, 0
@@ -37,7 +40,7 @@ class App(ctk.CTk):
         super().__init__()
         self.radius = 0
         self.color = "white"
-        self.font = "Helvetica 15"
+        self.font = "Helvetica 18"
         self.circle_radio_list = {}
         # Color str: list[ids], smallest, largest
         self.circle_color_map = {}
@@ -48,7 +51,7 @@ class App(ctk.CTk):
         self.tab_map = {}
         self.tab_name_map = {}
         self.title("Well Template.py")
-        self.geometry(f"{1600}x{900}")
+        self.geometry(f"{1900}x{1200}")
         # configure grid layout (2x2)
         self.grid_columnconfigure(2, weight=1)
         self.grid_rowconfigure((0, 1), weight=1)
@@ -111,7 +114,7 @@ class App(ctk.CTk):
             width=20,
             command=self.change_font,
         )
-        self.font_size_optionmenu.set("15")
+        self.font_size_optionmenu.set("18")
         self.font_size_optionmenu.grid(row=5, column=0, padx=(145, 0), pady=20)
 
         self.remove_text_button = ctk.CTkButton(
@@ -144,9 +147,9 @@ class App(ctk.CTk):
         self.circle_radio_list["white"] = circle_button
         # Canvas GUI
         self.canvas = ctk.CTkCanvas(
-            master=self, width=900, height=700, highlightcolor="blue"
+            master=self, width=CANVAS_WIDTH, height=CANVAS_HEIGHT, highlightcolor="blue"
         )
-        self.canvas.grid(row=0, column=2, pady=(50))
+        self.canvas.grid(row=0, column=2, pady=CANVAS_GRIDY)
         self.tab_name_map["Tab 1"] = self.canvas
 
         self.tab_button = ctk.CTkSegmentedButton(
@@ -158,7 +161,7 @@ class App(ctk.CTk):
             command=self.new_tab,
         )
         self.tab_button.set("Tab 1")
-        self.tab_button.grid(row=0, column=2, padx=(120, 0), pady=(20, 0), sticky="nw")
+        self.tab_button.grid(row=0, column=2, pady=(10, 0), sticky="n")
 
         self.canvas.bind_all("<Control-Button-1>", self.callback)
         self.canvas.bind_all("<Control-B1-Motion>", self.drag)
@@ -171,9 +174,6 @@ class App(ctk.CTk):
         self.canvas.bind_all("<Alt-Button-1>", self.callback)
         self.bind("<Control-z>", self.undo_action)
 
-        self.canvas_under_frame = ctk.CTkFrame(self, width=900, height=200)
-        self.canvas_under_frame.grid(row=1, column=2)
-
     def create_well_grid_event(self, grid_size: str):
         self.canvas.addtag_all("del")
         self.canvas.delete("del")
@@ -182,8 +182,8 @@ class App(ctk.CTk):
         )
 
         if grid_size == "96":
-            self.create_canvas(space=70, radius=30, rows=8, cols=12)
-            self.radius = 30
+            self.create_canvas(space=100, radius=45, rows=8, cols=12)
+            self.radius = 45
 
     # Creates a canvas from the specified values
     def create_canvas(self, space: int, radius: int, rows: int, cols: int):
@@ -451,9 +451,12 @@ class App(ctk.CTk):
 
             value_list = self.tab_button._value_list.copy()
             self.canvas = ctk.CTkCanvas(
-                master=self, width=900, height=800, highlightcolor="blue"
+                master=self,
+                width=CANVAS_WIDTH,
+                height=CANVAS_HEIGHT,
+                highlightcolor="blue",
             )
-            self.canvas.grid(row=0, column=2, pady=(50))
+            self.canvas.grid(row=0, column=2, pady=CANVAS_GRIDY)
             self.clear_data()
             self.stash_data()
             self.tab_name_map[name] = self.canvas
@@ -539,9 +542,9 @@ class App(ctk.CTk):
         self.grab_current_state()
         value_list = self.tab_button._value_list.copy()
         self.canvas = ctk.CTkCanvas(
-            master=self, width=900, height=800, highlightcolor="blue"
+            master=self, width=CANVAS_WIDTH, height=CANVAS_HEIGHT, highlightcolor="blue"
         )
-        self.canvas.grid(row=0, column=2, pady=(50))
+        self.canvas.grid(row=0, column=2, pady=CANVAS_GRIDY)
         self.stash_data()
         tab_name = self.tab_button.get() + " %"
         self.tab_name_map[tab_name] = self.canvas
