@@ -1,4 +1,5 @@
-# well-plate-visualiser
+# 96-well-plate-illustration-tool
+
 
 Application for creating illustrations of cell culture plates.
 
