@@ -428,7 +428,13 @@ class App(ctk.CTk):
 
     def new_tab(self, tab_name):
         self.stash_data()
-        if tab_name == "+":
+
+        if tab_name != "+":
+            self.canvas = self.tab_name_map[tab_name]
+            self.update_app_vars()
+            ctk.CTk.lift(self.canvas)
+
+        else:
             input_name = ctk.CTkInputDialog(text="Write Tab Name", title="New Tab Name")
             input_name.lift()
             name = input_name.get_input()
@@ -473,10 +479,6 @@ class App(ctk.CTk):
             self.seg.configure(values=value_list)
             self.seg.set(value_list[index])
             ctk.CTk.lift(self.canvas)
-        else:
-            self.canvas = self.tab_name_map[tab_name]
-            self.update_app_vars()
-            ctk.CTk.lift(self.canvas)
 
     def stash_data(self):
         tuple = (
@@ -514,17 +516,17 @@ class App(ctk.CTk):
                 if id in self.canvas_id_text_map:
                     b = self.canvas_id_text_map[id]
                     c = self.item_changes_map[b][-1]
+                    try:
+                        value = int(c)
 
-                    value = int(c)
-
-                    if value > largest_val:
-                        largest_val = value
-                    elif value < smallest_val:
-                        smallest_val = value
+                        if value > largest_val:
+                            largest_val = value
+                        elif value < smallest_val:
+                            smallest_val = value
+                    except ValueError:
+                        value = 1
             tuple = (list_id, smallest_val, largest_val)
             self.circle_color_map[key] = tuple
-
-        print(self.circle_color_map)
 
     def create_conc_circle(self, x, y, diameter, **kwargs):
 
@@ -540,15 +542,9 @@ class App(ctk.CTk):
             images.append(ImageTk.PhotoImage(image))
             self.canvas.create_image(x, y, image=images[-1])
 
-    def test(self):
-        for item in self.canvas_items_map:
-            coords = self.canvas_items_map[item]
-            x, y = coords
-            self.create_conc_circle(
-                x, y, self.radius * 2 - 4, fill=self.color, alpha=0.2
-            )
-
     def concentration_gradient(self):
+
+        self.stash_data()
         self.grab_current_state()
         value_list = self.seg._value_list.copy()
         self.canvas = ctk.CTkCanvas(
@@ -556,12 +552,13 @@ class App(ctk.CTk):
         )
         self.canvas.grid(row=0, column=2, pady=(50))
         self.stash_data()
-        self.tab_name_map["Conc"] = self.canvas
-
-        index = len(value_list) - 1
-        value_list.insert(index, "Conc")
+        tab_name = self.seg.get() + " %"
+        self.tab_name_map[tab_name] = self.canvas
+        if tab_name in value_list:
+            value_list.remove(tab_name)
+        value_list.insert(1, tab_name)
         self.seg.configure(values=value_list)
-        self.seg.set(value_list[index])
+        self.seg.set(value_list[1])
         ctk.CTk.lift(self.canvas)
         self.create_well_grid_event("96")
         for color in self.circle_color_map:
@@ -569,15 +566,22 @@ class App(ctk.CTk):
             items, _, largest = self.circle_color_map[color]
 
             for item in items:
-                coords = self.canvas_items_map[item]
-                x, y = coords
-                b = self.canvas_id_text_map[item]
-                c = self.item_changes_map[b][-1]
-                g = int(c)
-                print(g)
-                self.create_conc_circle(
-                    x, y, self.radius * 2 - 2, fill=color, alpha=(g / largest) * 0.9
-                )
+                if item in self.canvas_id_text_map:
+                    coords = self.canvas_items_map[item]
+                    x, y = coords
+                    b = self.canvas_id_text_map[item]
+                    c = self.item_changes_map[b][-1]
+                    try:
+                        g = int(c)
+                        self.create_conc_circle(
+                            x,
+                            y,
+                            self.radius * 2,
+                            fill=color,
+                            alpha=(g / largest) * 0.5,
+                        )
+                    except ValueError:
+                        pass
 
 
 if __name__ == "__main__":
