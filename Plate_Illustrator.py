@@ -6,7 +6,7 @@ from PIL import Image, ImageTk, ImageDraw
 
 ctk.set_appearance_mode("System")  # Modes: "System" (standard), "Dark", "Light"
 ctk.set_default_color_theme("blue")  # Themes: "blue" (standard), "green", "dark-blue"
-letters_list: list[str] = [
+LETTER_LIST: list[str] = [
     "A",
     "B",
     "C",
@@ -23,34 +23,13 @@ letters_list: list[str] = [
     "O",
     "P",
 ]
-grid_size_list: list[str] = ["96"]
+GRID_SIZE_LIST: list[str] = ["96"]
 global rectx1, recty1, rectyx2, recty2, non_circle_items
 non_circle_items: int
 rectx1, recty1, rectyx2, recty2, non_circle_items = 0, 0, 0, 0, 0
-font_list = ["Helvetica", "Sans", "System", "Terminal", "Ms", "Times"]
-font_size_list = [
-    "1",
-    "2",
-    "3",
-    "4",
-    "5",
-    "6",
-    "7",
-    "8",
-    "9",
-    "10",
-    "11",
-    "12",
-    "13",
-    "14",
-    "15",
-    "16",
-    "17",
-    "18",
-    "19",
-    "20",
-]
-images = []
+FONT_LIST = ["Helvetica", "Sans", "System", "Terminal", "Ms", "Times"]
+FONT_SIZE_LIST = [str(i) for i in range(1, 21)]
+IMAGES = []
 
 
 class App(ctk.CTk):
@@ -90,7 +69,7 @@ class App(ctk.CTk):
 
         self.choose_grid_optionmenu = ctk.CTkOptionMenu(
             self.sidebar_frame,
-            values=grid_size_list,
+            values=GRID_SIZE_LIST,
             command=self.create_well_grid_event,
         )
         self.choose_grid_optionmenu.set("")
@@ -111,14 +90,16 @@ class App(ctk.CTk):
         )
         self.change_name_circle.grid(row=3, column=0, padx=20, pady=(40, 0))
 
-        self.add_text_button = ctk.CTkButton(
-            self.sidebar_frame, text="Add Text", command=self.concentration_gradient
+        self.gradient_button = ctk.CTkButton(
+            self.sidebar_frame,
+            text="Values Gradient",
+            command=self.concentration_gradient,
         )
-        self.add_text_button.grid(row=4, column=0, padx=20, pady=(40, 0))
+        self.gradient_button.grid(row=4, column=0, padx=20, pady=(40, 0))
 
         # Optionmenus for choosing text style
         self.font_optionmenu = ctk.CTkOptionMenu(
-            self.sidebar_frame, values=font_list, command=self.change_font
+            self.sidebar_frame, values=FONT_LIST, command=self.change_font
         )
         self.font_optionmenu.set("Helvetica")
         self.font_optionmenu.grid(row=5, column=0, padx=(0, 55), pady=20)
@@ -126,7 +107,7 @@ class App(ctk.CTk):
         # Optionmenus for choosing text style
         self.font_size_optionmenu = ctk.CTkOptionMenu(
             self.sidebar_frame,
-            values=font_size_list,
+            values=FONT_SIZE_LIST,
             width=20,
             command=self.change_font,
         )
@@ -168,7 +149,7 @@ class App(ctk.CTk):
         self.canvas.grid(row=0, column=2, pady=(50))
         self.tab_name_map["Tab 1"] = self.canvas
 
-        self.seg = ctk.CTkSegmentedButton(
+        self.tab_button = ctk.CTkSegmentedButton(
             self,
             width=100,
             height=30,
@@ -176,8 +157,8 @@ class App(ctk.CTk):
             values=["Tab 1", "+"],
             command=self.new_tab,
         )
-        self.seg.set("Tab 1")
-        self.seg.grid(row=0, column=2, padx=(120, 0), pady=(20, 0), sticky="nw")
+        self.tab_button.set("Tab 1")
+        self.tab_button.grid(row=0, column=2, padx=(120, 0), pady=(20, 0), sticky="nw")
 
         self.canvas.bind_all("<Control-Button-1>", self.callback)
         self.canvas.bind_all("<Control-B1-Motion>", self.drag)
@@ -215,7 +196,7 @@ class App(ctk.CTk):
             self.canvas.create_text(
                 15,
                 space * (i + 1),
-                text=letters_list[i],
+                text=LETTER_LIST[i],
                 fill="black",
                 font=self.font,
                 tags="letter",
@@ -242,15 +223,21 @@ class App(ctk.CTk):
                 self.canvas_items_map[id] = coords_circle
                 self.item_changes_map[id] = ["white"]
 
+    def get_enclosed_items(self):
+        """Retrieve tuple of enclosed canvas item ID:s
+        tuple[int]: canvas item ID:s
+        """
+        global rectx1, recty1, rectx2, recty2
+        self.canvas.coords(self.rect_id, 0, 0, 0, 0)
+        items_selected = self.canvas.find_overlapping(rectx1, recty1, rectx2, recty2)
+        return items_selected
+
     # Manipulates all circles overlapping with click-drag rectangle
     def release(self, event):
-        global rectx1, recty1, rectx2, recty2
-
-        self.canvas.coords(self.rect_id, 0, 0, 0, 0)
-        items_overlapping = self.canvas.find_overlapping(rectx1, recty1, rectx2, recty2)
+        items_selected = self.get_enclosed_items()
         # Ignores items that aren't inner circle
         list_of_items = []
-        for item in items_overlapping:
+        for item in items_selected:
             if item in self.canvas_items_map:
                 list_of_items.append(item)
                 self.canvas.itemconfig(item, fill=self.color, tags=self.color)
@@ -312,21 +299,19 @@ class App(ctk.CTk):
         self.canvas.itemconfigure(self.color, fill=self.color)
 
     def add_text_selected_items(self, event):
-        global rectx1, recty1, rectx2, recty2
-        self.canvas.coords(self.rect_id, 0, 0, 0, 0)
         input_text = ctk.CTkInputDialog(text="Write Text", title="Add Text")
         text = input_text.get_input()
-        items_overlapping = self.canvas.find_overlapping(rectx1, recty1, rectx2, recty2)
+        items_selected = self.get_enclosed_items()
         # Ignores items that aren't inner circle
         list_of_items = []
         #   #checks if item id is inner circle, and if it already exists as a text-item or not.
-        for item in items_overlapping:
+        for item in items_selected:
 
             # If exists configure existing text-item
             if item in self.canvas_items_map and item in self.canvas_id_text_map:
 
                 text_item = self.canvas_id_text_map[item]
-                self.canvas.itemconfigure(text_item, text=text)
+                self.canvas.itemconfigure(text_item, text=text, font=self.font)
                 self.item_changes_map[text_item].append(text)
                 list_of_items.append(text_item)
             # If not exists create text-item and add to map
@@ -360,29 +345,27 @@ class App(ctk.CTk):
             fill = fill[0] % 256, fill[1] % 256, fill[2] % 256
             fill += (alpha,)
             image = Image.new("RGBA", (x2 - x1, y2 - y1), color=fill)
-            images.append(ImageTk.PhotoImage(image))
-            b = self.canvas.create_image(x1, y1, image=images[-1], anchor="nw")
+            IMAGES.append(ImageTk.PhotoImage(image))
+            b = self.canvas.create_image(x1, y1, image=IMAGES[-1], anchor="nw")
         rect = self.canvas.create_rectangle(x1, y1, x2, y2, **kwargs)
         ids = [b, rect]
         tuple = (ids, "item_created")
         self.actions_stack.append(tuple)
 
     def add_rect_selected_area(self, event):
-        global rectx1, recty1, rectx2, recty2
 
-        self.canvas.coords(self.rect_id, 0, 0, 0, 0)
-        a = self.canvas.find_overlapping(rectx1, recty1, rectx2, recty2)
+        selected_area = self.get_enclosed_items()
         # Ignores items that aren't inner circle
 
         b, c = 0, 0
         i, j = 0, 1
         while b == 0:
-            if a[i] in self.canvas_items_map:
-                b = a[i]
+            if selected_area[i] in self.canvas_items_map:
+                b = selected_area[i]
             i += 1
         while c == 0:
-            if a[len(a) - j] in self.canvas_items_map:
-                c = a[len(a) - j]
+            if selected_area[len(selected_area) - j] in self.canvas_items_map:
+                c = selected_area[len(selected_area) - j]
             j += 1
 
         coords1 = self.canvas_items_map[b]
@@ -447,13 +430,13 @@ class App(ctk.CTk):
                     option_1="OK",
                     justify="center",
                 ).tkraise()
-                self.seg.set("")
+                self.tab_button.set("")
                 return
             elif name == None:
-                self.seg.set("")
+                self.tab_button.set("")
                 return
 
-            value_list = self.seg._value_list.copy()
+            value_list = self.tab_button._value_list.copy()
             if name in value_list:
                 CTkMessagebox(
                     master=self,
@@ -463,21 +446,22 @@ class App(ctk.CTk):
                     option_1="OK",
                     justify="center",
                 ).tkraise()
-                self.seg.set("")
+                self.tab_button.set("")
                 return
 
-            value_list = self.seg._value_list.copy()
+            value_list = self.tab_button._value_list.copy()
             self.canvas = ctk.CTkCanvas(
                 master=self, width=900, height=800, highlightcolor="blue"
             )
             self.canvas.grid(row=0, column=2, pady=(50))
+            self.clear_data()
             self.stash_data()
             self.tab_name_map[name] = self.canvas
 
             index = len(value_list) - 1
             value_list.insert(index, name)
-            self.seg.configure(values=value_list)
-            self.seg.set(value_list[index])
+            self.tab_button.configure(values=value_list)
+            self.tab_button.set(value_list[index])
             ctk.CTk.lift(self.canvas)
 
     def stash_data(self):
@@ -497,6 +481,13 @@ class App(ctk.CTk):
         self.canvas_id_text_map = tuple[2]
         self.actions_stack = tuple[3]
         self.item_changes_map = tuple[4]
+
+    def clear_data(self):
+        self.circle_color_map.clear()
+        self.canvas_items_map.clear()
+        self.canvas_id_text_map.clear()
+        self.actions_stack.clear()
+        self.item_changes_map.clear()
 
     def grab_current_state(self):
         self.circle_color_map
@@ -539,26 +530,26 @@ class App(ctk.CTk):
             image = Image.new("RGBA", (diameter, diameter), color=(0, 0, 0, 0))
             draw = ImageDraw.Draw(image)
             draw.ellipse((0, 0, diameter, diameter), fill=fill)
-            images.append(ImageTk.PhotoImage(image))
-            self.canvas.create_image(x, y, image=images[-1])
+            IMAGES.append(ImageTk.PhotoImage(image))
+            self.canvas.create_image(x, y, image=IMAGES[-1])
 
     def concentration_gradient(self):
 
         self.stash_data()
         self.grab_current_state()
-        value_list = self.seg._value_list.copy()
+        value_list = self.tab_button._value_list.copy()
         self.canvas = ctk.CTkCanvas(
             master=self, width=900, height=800, highlightcolor="blue"
         )
         self.canvas.grid(row=0, column=2, pady=(50))
         self.stash_data()
-        tab_name = self.seg.get() + " %"
+        tab_name = self.tab_button.get() + " %"
         self.tab_name_map[tab_name] = self.canvas
         if tab_name in value_list:
             value_list.remove(tab_name)
         value_list.insert(1, tab_name)
-        self.seg.configure(values=value_list)
-        self.seg.set(value_list[1])
+        self.tab_button.configure(values=value_list)
+        self.tab_button.set(value_list[1])
         ctk.CTk.lift(self.canvas)
         self.create_well_grid_event("96")
         for color in self.circle_color_map:
