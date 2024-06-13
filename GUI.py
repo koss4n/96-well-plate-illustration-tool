@@ -305,7 +305,6 @@ class App(ctk.CTk):
 
             # If exists configure existing text-item
             if item in self.canvas_items_map and item in self.canvas_id_text_map:
-
                 text_item = self.canvas_id_text_map[item]
                 self.canvas.itemconfigure(text_item, text=text)
                 self.item_changes_map[text_item].append(text)
@@ -452,6 +451,7 @@ class App(ctk.CTk):
                 master=self, width=900, height=800, highlightcolor="blue"
             )
             self.canvas.grid(row=0, column=2, pady=(50))
+            self.clear_data()
             self.stash_data()
             self.tab_name_map[name] = self.canvas
 
@@ -478,6 +478,13 @@ class App(ctk.CTk):
         self.canvas_id_text_map = tuple[2]
         self.actions_stack = tuple[3]
         self.item_changes_map = tuple[4]
+
+    def clear_data(self):
+        self.circle_color_map.clear()
+        self.canvas_items_map.clear()
+        self.canvas_id_text_map.clear()
+        self.actions_stack.clear()
+        self.item_changes_map.clear()
 
     def grab_current_state(self):
         self.circle_color_map
