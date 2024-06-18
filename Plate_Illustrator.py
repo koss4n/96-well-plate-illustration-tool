@@ -511,7 +511,7 @@ class App(ctk.CTk):
                     b = self.canvas_id_text_map[id]
                     c = self.item_changes_map[b][-1]
                     try:
-                        value = int(c)
+                        value = float(c)
 
                         if value > largest_val:
                             largest_val = value
@@ -566,7 +566,7 @@ class App(ctk.CTk):
                     b = self.canvas_id_text_map[item]
                     c = self.item_changes_map[b][-1]
                     try:
-                        g = int(c)
+                        g = float(c)
                         self.create_conc_circle(
                             x,
                             y,
@@ -574,8 +574,12 @@ class App(ctk.CTk):
                             fill=color,
                             alpha=(g / largest) * 0.5,
                         )
+
                     except ValueError:
+
                         pass
+                text_id = self.canvas_id_text_map[item]
+                self.canvas.create_text(x, y, text=self.item_changes_map[text_id][-1])
 
 
 if __name__ == "__main__":
