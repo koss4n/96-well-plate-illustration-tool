@@ -31,7 +31,7 @@ global rectx1, recty1, rectyx2, recty2, non_circle_items
 non_circle_items: int
 rectx1, recty1, rectyx2, recty2, non_circle_items = 0, 0, 0, 0, 0
 FONT_LIST = ["Helvetica", "Sans", "System", "Terminal", "Ms", "Times"]
-FONT_SIZE_LIST = [str(i) for i in range(1, 21)]
+FONT_SIZE_LIST = [str(i) for i in range(8, 31)]
 IMAGES = []
 
 
@@ -41,7 +41,7 @@ class App(ctk.CTk):
         super().__init__()
         self.radius = 0
         self.color = "white"
-        self.font = "Helvetica 18"
+        self.font = "Helvetica 22"
         self.circle_radio_list = {}
         # Color str: list[ids], smallest, largest
         self.circle_color_map = {}
@@ -115,7 +115,7 @@ class App(ctk.CTk):
             width=20,
             command=self.change_font,
         )
-        self.font_size_optionmenu.set("18")
+        self.font_size_optionmenu.set("22")
         self.font_size_optionmenu.grid(row=5, column=0, padx=(145, 0), pady=20)
 
         self.remove_text_button = ctk.CTkButton(
@@ -382,6 +382,8 @@ class App(ctk.CTk):
             x1 - l, y1 - l, x2 + l, y2 + l, fill=self.color, alpha=0.2
         )
 
+    # Undo action function, connected to the ctrl-z key
+
     def undo_action(self, event):
 
         if len(self.actions_stack) < 1:
@@ -469,6 +471,7 @@ class App(ctk.CTk):
             self.tab_button.set(value_list[index])
             ctk.CTk.lift(self.canvas)
 
+    # Stores the state of circles current tab
     def stash_data(self):
         tuple = (
             self.circle_color_map.copy(),
@@ -479,6 +482,7 @@ class App(ctk.CTk):
         )
         self.tab_map[self.canvas] = tuple
 
+    # Updates the variables of the current tab
     def update_app_vars(self):
         tuple = self.tab_map[self.canvas]
         self.circle_color_map = tuple[0]
@@ -487,6 +491,7 @@ class App(ctk.CTk):
         self.actions_stack = tuple[3]
         self.item_changes_map = tuple[4]
 
+    # Clears the stored data and state of the current tab
     def clear_data(self):
         self.circle_color_map.clear()
         self.canvas_items_map.clear()
