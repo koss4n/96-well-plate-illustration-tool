@@ -36,6 +36,7 @@ IMAGES = []
 
 
 class App(ctk.CTk):
+    # GUI
     def __init__(self):
         super().__init__()
         self.radius = 0
@@ -174,6 +175,7 @@ class App(ctk.CTk):
         self.canvas.bind_all("<Alt-Button-1>", self.callback)
         self.bind("<Control-z>", self.undo_action)
 
+    # Creates a well grid with the specified grid size
     def create_well_grid_event(self, grid_size: str):
         self.canvas.addtag_all("del")
         self.canvas.delete("del")
@@ -194,7 +196,7 @@ class App(ctk.CTk):
         i = space
         for i in range(rows):
             self.canvas.create_text(
-                15,
+                30,
                 space * (i + 1),
                 text=LETTER_LIST[i],
                 fill="black",
@@ -205,7 +207,7 @@ class App(ctk.CTk):
         for i in range(cols):
             self.canvas.create_text(
                 space * (i + 1),
-                15,
+                30,
                 text=i + 1,
                 fill="black",
                 font=self.font,
