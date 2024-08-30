@@ -2,7 +2,7 @@
 import customtkinter as ctk
 from CTkMessagebox import CTkMessagebox
 from CTkColorPicker import *
-from PIL import Image, ImageTk, ImageDraw
+from PIL import Image, ImageTk, ImageDraw, ImageGrab
 
 ctk.set_appearance_mode("System")  # Modes: "System" (standard), "Dark", "Light"
 ctk.set_default_color_theme("blue")  # Themes: "blue" (standard), "green", "dark-blue"
@@ -93,6 +93,12 @@ class App(ctk.CTk):
             command=self.add_name_radiobutton,
         )
         self.change_name_circle.grid(row=3, column=0, padx=20, pady=(40, 0))
+
+        self.test_feature = ctk.CTkButton(
+            self.sidebar_frame, text="Test Feature", command=self.save_image
+        )
+
+        self.test_feature.grid(row=5, column=0, padx=20, pady=(100, 0))
 
         self.gradient_button = ctk.CTkButton(
             self.sidebar_frame,
@@ -587,6 +593,13 @@ class App(ctk.CTk):
                         pass
                 text_id = self.canvas_id_text_map[item]
                 self.canvas.create_text(x, y, text=self.item_changes_map[text_id][-1])
+
+    def save_image(self):
+        x = self.winfo_rootx() + self.canvas.winfo_x()
+        y = self.winfo_rooty() + self.canvas.winfo_y()
+        x1 = x + self.canvas.winfo_width()
+        y1 = y + self.canvas.winfo_height()
+        ImageGrab.grab().crop((x, y, x1, y1)).save("well_template.png")
 
 
 if __name__ == "__main__":
